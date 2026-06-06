@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
+import CaseStudySMS from "./pages/CaseStudySMS";
 import About from "./pages/About";
 import Skills from "./pages/Skills";
 import Projects from "./pages/Projects";
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/projects/sms-sending-system" element={<CaseStudySMS />} />
 
           <Route
             path="*"

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -13,39 +14,45 @@ import {
   Rocket,
   Send,
   ShieldCheck,
-  Smartphone,
   User,
 } from "lucide-react";
 import { motion } from "framer-motion";
+
+const EMAIL = "sadamkeyow2@gmail.com";
+const PHONE_DISPLAY = "+252 26 198 18501";
+const PHONE_LINK = "+2522619818501";
+const WHATSAPP_LINK = "https://wa.me/2522619818501";
+const MAP_LINK =
+  "https://www.google.com/maps/search/?api=1&query=Mogadishu%2C%20Somalia";
 
 const contactMethods = [
   {
     icon: Mail,
     title: "Email",
-    value: "sadamkeyow2@gmail.com",
-    desc: "Send project details by email.",
-    href: "",
+    value: EMAIL,
+    desc: "Send project details directly by email.",
+    href: `mailto:${EMAIL}`,
   },
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "Available for project discussion",
-    desc: "Best for quick communication.",
-    href: "#",
+    value: PHONE_DISPLAY,
+    desc: "Best for quick project discussion.",
+    href: WHATSAPP_LINK,
   },
   {
     icon: Phone,
     title: "Call",
-    value: "Schedule a project call",
-    desc: "Discuss project scope and timeline.",
-    href: "#",
+    value: PHONE_DISPLAY,
+    desc: "Call directly for project discussion.",
+    href: `tel:${PHONE_LINK}`,
   },
   {
     icon: MapPin,
     title: "Location",
     value: "Mogadishu, Somalia",
-    desc: "Available for remote projects globally.",
-    href: "#",
+    desc: "Open location directly on Google Maps.",
+    href: MAP_LINK,
   },
 ];
 
@@ -56,27 +63,113 @@ const projectTypes = [
   "Backend API",
   "Mobile App",
   "Portfolio Website",
+  "E-commerce Website",
+  "Management System",
+];
+
+const budgetOptions = [
+  "Small project",
+  "Medium project",
+  "Large project",
+  "Not sure yet",
 ];
 
 const expectations = [
   {
     icon: Clock,
-    title: "Clear Timeline",
-    desc: "You receive a practical project timeline based on your requirements.",
+    title: "Clear Response",
+    desc: "I review your request and respond with clear next steps.",
   },
   {
     icon: ShieldCheck,
-    title: "Professional Structure",
-    desc: "Your project is planned with clean pages, features, and workflow.",
+    title: "Professional Planning",
+    desc: "Your project is reviewed based on pages, features, users, and workflow.",
   },
   {
     icon: Rocket,
-    title: "Launch Ready",
-    desc: "The final work is prepared for online use or client presentation.",
+    title: "Ready for Action",
+    desc: "The request is prepared for real discussion through WhatsApp or email.",
   },
 ];
 
+const initialForm = {
+  fullName: "",
+  email: "",
+  phone: "",
+  projectType: "",
+  budget: "",
+  message: "",
+};
+
 export default function Contact() {
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+
+  const updateField = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "Full name is required.";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email address is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Enter a valid email address.";
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone or WhatsApp number is required.";
+    }
+
+    if (!form.projectType) {
+      newErrors.projectType = "Please select a project type.";
+    }
+
+    if (!form.budget) {
+      newErrors.budget = "Please select a budget range.";
+    }
+
+    if (!form.message.trim()) {
+      newErrors.message = "Project message is required.";
+    } else if (form.message.trim().length < 20) {
+      newErrors.message = "Please describe your project with at least 20 characters.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (!validateForm()) return;
+
+    const text = `
+New Project Request
+
+Full Name: ${form.fullName}
+Email: ${form.email}
+Phone / WhatsApp: ${form.phone}
+Project Type: ${form.projectType}
+Budget: ${form.budget}
+
+Project Message:
+${form.message}
+    `.trim();
+
+    const encodedMessage = encodeURIComponent(text);
+    window.open(`${WHATSAPP_LINK}?text=${encodedMessage}`, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <>
       {/* HERO */}
@@ -102,9 +195,7 @@ export default function Contact() {
               className="text-5xl md:text-7xl font-black leading-tight tracking-tight"
             >
               Let’s Build
-              <span className="block text-[#f59e0b]">
-                Something Useful.
-              </span>
+              <span className="block text-[#f59e0b]">Something Useful.</span>
             </motion.h1>
 
             <motion.p
@@ -114,8 +205,8 @@ export default function Contact() {
               className="text-gray-300 text-lg leading-8 mt-7 max-w-3xl"
             >
               Send your project idea, business need, or system requirements.
-              I’ll help you understand the best structure, timeline, and next
-              steps for building a professional digital product.
+              Your form information will open directly in WhatsApp so you can
+              send the request immediately.
             </motion.p>
 
             <motion.div
@@ -166,19 +257,22 @@ export default function Contact() {
               </h2>
 
               <p className="text-gray-600 text-lg leading-8 mt-5">
-                Whether you need a website, dashboard, admin panel, backend API,
-                mobile app, or business system, you can send the details here.
+                You can contact me directly by email, WhatsApp, call, or open
+                my location on Google Maps.
               </p>
             </div>
 
             <div className="grid gap-4">
               {contactMethods.map((item) => {
                 const Icon = item.icon;
+                const isExternal = item.href.startsWith("http");
 
                 return (
                   <a
                     key={item.title}
                     href={item.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
                     className="group bg-white border border-gray-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
                   >
                     <div className="w-12 h-12 rounded-xl bg-[#071a33] flex items-center justify-center shrink-0 group-hover:bg-[#f59e0b] transition">
@@ -205,6 +299,7 @@ export default function Contact() {
 
           {/* FORM */}
           <motion.form
+            onSubmit={handleSubmit}
             initial={{ opacity: 0, x: 28 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.65 }}
@@ -219,28 +314,39 @@ export default function Contact() {
               <div>
                 <h3 className="text-2xl font-black">Project Request</h3>
                 <p className="text-gray-600 mt-1">
-                  Fill the form with your project details.
+                  Fill the form and send it directly to WhatsApp.
                 </p>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5">
               <div>
-                <label className="font-black block mb-2">Full Name</label>
+                <label className="font-black block mb-2">Full Name *</label>
                 <div className="relative">
                   <User
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                     size={19}
                   />
                   <input
-                    className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition"
-                    placeholder="Your name"
+                    value={form.fullName}
+                    onChange={(e) => updateField("fullName", e.target.value)}
+                    className={`w-full border rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition ${
+                      errors.fullName
+                        ? "border-red-500"
+                        : "border-gray-300 focus:border-[#8a5200]"
+                    }`}
+                    placeholder="Your full name"
                   />
                 </div>
+                {errors.fullName && (
+                  <p className="text-red-600 text-sm font-bold mt-2">
+                    {errors.fullName}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-black block mb-2">Email Address</label>
+                <label className="font-black block mb-2">Email Address *</label>
                 <div className="relative">
                   <Mail
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -248,69 +354,131 @@ export default function Contact() {
                   />
                   <input
                     type="email"
-                    className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition"
+                    value={form.email}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    className={`w-full border rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition ${
+                      errors.email
+                        ? "border-red-500"
+                        : "border-gray-300 focus:border-[#8a5200]"
+                    }`}
                     placeholder="you@example.com"
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-600 text-sm font-bold mt-2">
+                    {errors.email}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5 mt-5">
               <div>
-                <label className="font-black block mb-2">Phone / WhatsApp</label>
+                <label className="font-black block mb-2">Phone / WhatsApp *</label>
                 <div className="relative">
                   <Phone
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                     size={19}
                   />
                   <input
-                    className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition"
+                    value={form.phone}
+                    onChange={(e) => updateField("phone", e.target.value)}
+                    className={`w-full border rounded-xl pl-12 pr-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition ${
+                      errors.phone
+                        ? "border-red-500"
+                        : "border-gray-300 focus:border-[#8a5200]"
+                    }`}
                     placeholder="+252..."
                   />
                 </div>
+                {errors.phone && (
+                  <p className="text-red-600 text-sm font-bold mt-2">
+                    {errors.phone}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-black block mb-2">Project Type</label>
-                <select className="w-full border border-gray-300 rounded-xl px-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition bg-white">
-                  <option>Select project type</option>
+                <label className="font-black block mb-2">Project Type *</label>
+                <select
+                  value={form.projectType}
+                  onChange={(e) => updateField("projectType", e.target.value)}
+                  className={`w-full border rounded-xl px-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition bg-white ${
+                    errors.projectType
+                      ? "border-red-500"
+                      : "border-gray-300 focus:border-[#8a5200]"
+                  }`}
+                >
+                  <option value="">Select project type</option>
                   {projectTypes.map((type) => (
-                    <option key={type}>{type}</option>
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
+                {errors.projectType && (
+                  <p className="text-red-600 text-sm font-bold mt-2">
+                    {errors.projectType}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="mt-5">
-              <label className="font-black block mb-2">Project Budget</label>
-              <select className="w-full border border-gray-300 rounded-xl px-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition bg-white">
-                <option>Select budget range</option>
-                <option>Small project</option>
-                <option>Medium project</option>
-                <option>Large project</option>
-                <option>Not sure yet</option>
+              <label className="font-black block mb-2">Project Budget *</label>
+              <select
+                value={form.budget}
+                onChange={(e) => updateField("budget", e.target.value)}
+                className={`w-full border rounded-xl px-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition bg-white ${
+                  errors.budget
+                    ? "border-red-500"
+                    : "border-gray-300 focus:border-[#8a5200]"
+                }`}
+              >
+                <option value="">Select budget range</option>
+                {budgetOptions.map((budget) => (
+                  <option key={budget} value={budget}>
+                    {budget}
+                  </option>
+                ))}
               </select>
+              {errors.budget && (
+                <p className="text-red-600 text-sm font-bold mt-2">
+                  {errors.budget}
+                </p>
+              )}
             </div>
 
             <div className="mt-5">
-              <label className="font-black block mb-2">Project Message</label>
+              <label className="font-black block mb-2">Project Message *</label>
               <textarea
                 rows="6"
-                className="w-full border border-gray-300 rounded-xl px-4 py-4 outline-none focus:border-[#8a5200] focus:ring-4 focus:ring-orange-100 transition resize-none"
+                value={form.message}
+                onChange={(e) => updateField("message", e.target.value)}
+                className={`w-full border rounded-xl px-4 py-4 outline-none focus:ring-4 focus:ring-orange-100 transition resize-none ${
+                  errors.message
+                    ? "border-red-500"
+                    : "border-gray-300 focus:border-[#8a5200]"
+                }`}
                 placeholder="Tell me what you want to build, main features, users, and goal..."
               />
+              {errors.message && (
+                <p className="text-red-600 text-sm font-bold mt-2">
+                  {errors.message}
+                </p>
+              )}
             </div>
 
             <button
-              type="button"
+              type="submit"
               className="mt-6 w-full bg-black text-white rounded-xl py-4 font-black hover:bg-[#8a5200] transition flex items-center justify-center gap-2"
             >
               Send Project Request <ArrowRight size={19} />
             </button>
 
             <p className="text-gray-500 text-sm leading-6 mt-5 text-center">
-              This form is currently frontend-only. To receive real messages,
-              connect it with EmailJS, Formspree, PHP mail, or a backend API.
+              This form opens WhatsApp with your project details. Review the
+              message there and press send.
             </p>
           </motion.form>
         </div>
@@ -440,17 +608,19 @@ export default function Contact() {
               </p>
 
               <div className="flex flex-col sm:flex-row justify-center gap-5 mt-10">
-                <a
-                  href="https://wa.me/252619818501"
-                  className="orange-btn"
-                >
+                <a href={`mailto:${EMAIL}`} className="orange-btn">
                   <Mail size={19} />
                   Email Me
                 </a>
 
-                <Link to="/projects" className="dark-btn">
-                  View Projects <ArrowRight size={19} />
-                </Link>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dark-btn"
+                >
+                  WhatsApp <ArrowRight size={19} />
+                </a>
               </div>
             </div>
           </motion.div>
